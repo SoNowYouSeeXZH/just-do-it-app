@@ -12,6 +12,7 @@ import { useGameStore } from '../store/gameStore';
 import { GuessGrid } from '../components/GuessGrid';
 import { ChineseKeyboard } from '../components/ChineseKeyboard';
 import ResultModal from '../components/ResultModal';
+import { guofeng } from '../theme/guofeng';
 
 export default function GameScreen() {
   const {
@@ -45,9 +46,8 @@ export default function GameScreen() {
       Animated.timing(shakeAnim, { toValue: -6, duration: 50, useNativeDriver: true }),
       Animated.timing(shakeAnim, { toValue: 0, duration: 40, useNativeDriver: true }),
     ]).start();
-  }, []);
+  }, [shakeAnim]);
 
-  // 揭示当前行动画
   useEffect(() => {
     if (currentRow > 0) {
       const prevRow = guesses[currentRow - 1];
@@ -57,10 +57,9 @@ export default function GameScreen() {
         updatedGuesses[currentRow - 1] = { ...updatedGuesses[currentRow - 1], isRevealed: true };
         useGameStore.setState({ guesses: updatedGuesses });
 
-        // 胜利或失败提示
         setTimeout(() => {
           if (status === 'won') {
-            const msgs = ['完美！', '太棒了！', '成语达人！', '学富五车！', '博学多才！'];
+            const msgs = ['一语中的', '妙笔生花', '成语达人', '学富五车', '博学多才'];
             showToast(msgs[Math.min(currentRow - 1, msgs.length - 1)]);
           } else if (status === 'lost') {
             showToast(`正确答案：${answer}`);
@@ -68,18 +67,18 @@ export default function GameScreen() {
         }, 4 * 150 + 350);
       }
     }
-  }, [currentRow, status]);
+  }, [currentRow, status, answer, guesses, showToast]);
 
   const handleSubmit = useCallback(() => {
     const result = submitGuess();
     if (result === 'invalid_format') {
-      showToast('请输入4个汉字');
+      showToast('请输入四个汉字');
       shakeRow();
     } else if (result === 'not_in_list') {
-      showToast('不在词库中，换一个');
+      showToast('词库未收录，换一个');
       shakeRow();
     } else if (result === 'already_won') {
-      showToast('已经猜对啦！');
+      showToast('已经猜对啦');
     }
   }, [submitGuess, shakeRow, showToast]);
 
@@ -87,28 +86,36 @@ export default function GameScreen() {
 
   return (
     <SafeAreaView style={styles.safe}>
-      {/* 顶部标题栏 */}
+      <View style={styles.backdrop} />
+      <View style={styles.glow} />
+
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>成语猜猜</Text>
-        <View style={styles.stats}>
-          <View style={styles.statItem}>
-            <Text style={styles.statNum}>{streak}</Text>
-            <Text style={styles.statLabel}>连胜</Text>
-          </View>
-          <View style={styles.statItem}>
-            <Text style={styles.statNum}>{totalPlayed}</Text>
-            <Text style={styles.statLabel}>已玩</Text>
-          </View>
-          <View style={styles.statItem}>
-            <Text style={styles.statNum}>{winRate}%</Text>
-            <Text style={styles.statLabel}>胜率</Text>
-          </View>
+        <View>
+          <Text style={styles.eyebrow}>每日成语局</Text>
+          <Text style={styles.headerTitle}>成语猜猜</Text>
+        </View>
+        <View style={styles.badge}>
+          <Text style={styles.badgeText}>第 {currentRow + 1}/6 试</Text>
         </View>
       </View>
 
-      <View style={styles.divider} />
+      <View style={styles.statsPanel}>
+        <View style={styles.statItem}>
+          <Text style={styles.statNum}>{streak}</Text>
+          <Text style={styles.statLabel}>连胜</Text>
+        </View>
+        <View style={styles.statDivider} />
+        <View style={styles.statItem}>
+          <Text style={styles.statNum}>{totalPlayed}</Text>
+          <Text style={styles.statLabel}>已玩</Text>
+        </View>
+        <View style={styles.statDivider} />
+        <View style={styles.statItem}>
+          <Text style={styles.statNum}>{winRate}%</Text>
+          <Text style={styles.statLabel}>胜率</Text>
+        </View>
+      </View>
 
-      {/* Toast 提示 */}
       {toast ? (
         <View style={styles.toast} pointerEvents="none">
           <Text style={styles.toastText}>{toast}</Text>
@@ -116,24 +123,27 @@ export default function GameScreen() {
       ) : null}
 
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-        {/* 游戏说明 */}
-        <Text style={styles.hint}>猜一个四字成语，共 6 次机会</Text>
-        <View style={styles.legend}>
-          <View style={[styles.legendDot, { backgroundColor: '#538d4e' }]} />
-          <Text style={styles.legendText}>位置正确</Text>
-          <View style={[styles.legendDot, { backgroundColor: '#b59f3b' }]} />
-          <Text style={styles.legendText}>字在其中</Text>
-          <View style={[styles.legendDot, { backgroundColor: '#3a3a3c' }]} />
-          <Text style={styles.legendText}>不在其中</Text>
+        <View style={styles.ruleCard}>
+          <Text style={styles.ruleTitle}>猜一个四字成语</Text>
+          <Text style={styles.ruleText}>绿色为位置正确，金色为字在其中，墨色为答案中没有这个字。</Text>
+          <View style={styles.legend}>
+            <View style={[styles.legendPill, { backgroundColor: guofeng.colors.correct }]}>
+              <Text style={styles.legendText}>正位</Text>
+            </View>
+            <View style={[styles.legendPill, { backgroundColor: guofeng.colors.present }]}>
+              <Text style={styles.legendText}>含字</Text>
+            </View>
+            <View style={[styles.legendPill, { backgroundColor: guofeng.colors.absent }]}>
+              <Text style={styles.legendText}>无字</Text>
+            </View>
+          </View>
         </View>
 
-        {/* 猜测格 */}
-        <Animated.View style={{ transform: [{ translateX: shakeAnim }] }}>
+        <Animated.View style={[styles.boardWrap, { transform: [{ translateX: shakeAnim }] }]}>
           <GuessGrid guesses={guesses} currentInput={currentInput} currentRow={currentRow} />
         </Animated.View>
       </ScrollView>
 
-      {/* 输入区 */}
       {status === 'playing' ? (
         <ChineseKeyboard
           value={currentInput}
@@ -142,7 +152,6 @@ export default function GameScreen() {
         />
       ) : null}
 
-      {/* 结果弹层 */}
       <ResultModal />
     </SafeAreaView>
   );
@@ -151,93 +160,151 @@ export default function GameScreen() {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: '#121213',
+    backgroundColor: guofeng.colors.background,
+  },
+  backdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: guofeng.colors.background,
+  },
+  glow: {
+    position: 'absolute',
+    top: -120,
+    left: -60,
+    width: 280,
+    height: 280,
+    borderRadius: 140,
+    backgroundColor: 'rgba(215, 166, 87, 0.12)',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingHorizontal: guofeng.spacing.lg,
+    paddingTop: Platform.OS === 'ios' ? guofeng.spacing.sm : guofeng.spacing.md,
+    paddingBottom: guofeng.spacing.sm,
+  },
+  eyebrow: {
+    color: guofeng.colors.gold,
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 3,
+    marginBottom: 4,
   },
   headerTitle: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: '#fff',
-    letterSpacing: 2,
+    fontSize: 28,
+    fontWeight: '900',
+    color: guofeng.colors.text,
+    letterSpacing: 4,
   },
-  stats: {
+  badge: {
+    borderWidth: 1,
+    borderColor: guofeng.colors.border,
+    backgroundColor: 'rgba(36, 26, 16, 0.82)',
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+  },
+  badgeText: {
+    color: guofeng.colors.textMuted,
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  statsPanel: {
     flexDirection: 'row',
-    gap: 16,
+    alignItems: 'center',
+    marginHorizontal: guofeng.spacing.lg,
+    marginTop: guofeng.spacing.sm,
+    marginBottom: guofeng.spacing.sm,
+    paddingVertical: 12,
+    borderRadius: guofeng.radius.lg,
+    borderWidth: 1,
+    borderColor: guofeng.colors.borderSoft,
+    backgroundColor: 'rgba(27, 20, 13, 0.88)',
+    shadowColor: guofeng.shadow.color,
+    shadowOpacity: guofeng.shadow.opacity,
+    shadowRadius: guofeng.shadow.radius,
+    shadowOffset: guofeng.shadow.offset,
+    elevation: guofeng.shadow.elevation,
   },
   statItem: {
+    flex: 1,
     alignItems: 'center',
   },
+  statDivider: {
+    width: 1,
+    height: 32,
+    backgroundColor: guofeng.colors.borderSoft,
+  },
   statNum: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#fff',
+    fontSize: 21,
+    fontWeight: '900',
+    color: guofeng.colors.text,
   },
   statLabel: {
     fontSize: 11,
-    color: '#818384',
-    marginTop: 1,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: '#3a3a3c',
+    color: guofeng.colors.textMuted,
+    marginTop: 2,
   },
   toast: {
     position: 'absolute',
-    top: 80,
+    top: 92,
     left: 0,
     right: 0,
     alignItems: 'center',
     zIndex: 999,
   },
   toastText: {
-    backgroundColor: '#fff',
-    color: '#000',
+    backgroundColor: guofeng.colors.text,
+    color: guofeng.colors.ink,
     paddingHorizontal: 18,
     paddingVertical: 8,
-    borderRadius: 6,
+    borderRadius: guofeng.radius.sm,
     fontSize: 15,
-    fontWeight: '700',
+    fontWeight: '800',
   },
   content: {
     alignItems: 'center',
-    paddingTop: 8,
+    paddingHorizontal: guofeng.spacing.lg,
+    paddingTop: guofeng.spacing.sm,
+    paddingBottom: guofeng.spacing.md,
   },
-  hint: {
-    color: '#818384',
-    fontSize: 13,
-    marginBottom: 6,
+  ruleCard: {
+    width: '100%',
+    borderRadius: guofeng.radius.lg,
+    borderWidth: 1,
+    borderColor: guofeng.colors.borderSoft,
+    backgroundColor: 'rgba(27, 20, 13, 0.68)',
+    padding: guofeng.spacing.md,
+    marginBottom: guofeng.spacing.md,
+  },
+  ruleTitle: {
+    color: guofeng.colors.text,
+    fontSize: 16,
+    fontWeight: '900',
+    marginBottom: 5,
+  },
+  ruleText: {
+    color: guofeng.colors.textMuted,
+    fontSize: 12,
+    lineHeight: 18,
   },
   legend: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginBottom: 4,
+    gap: 8,
+    marginTop: 10,
   },
-  legendDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 2,
+  legendPill: {
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
   },
   legendText: {
-    color: '#818384',
-    fontSize: 12,
-    marginRight: 6,
+    color: '#fffaf0',
+    fontSize: 11,
+    fontWeight: '800',
   },
-  resetBtn: {
-    backgroundColor: '#538d4e',
-    borderRadius: 10,
-    paddingHorizontal: 32,
-    paddingVertical: 12,
-  },
-  resetText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '700',
+  boardWrap: {
+    width: '100%',
+    alignItems: 'center',
   },
 });

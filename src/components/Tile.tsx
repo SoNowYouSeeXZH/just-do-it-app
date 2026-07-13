@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Animated } from 'react-native';
 import { LetterStatus } from '../store/types';
+import { guofeng } from '../theme/guofeng';
 
 interface TileProps {
   char: string;
@@ -10,17 +11,17 @@ interface TileProps {
 }
 
 const STATUS_COLORS: Record<LetterStatus, string> = {
-  correct: '#538d4e',
-  present: '#b59f3b',
-  absent:  '#3a3a3c',
-  empty:   '#121213',
+  correct: guofeng.colors.correct,
+  present: guofeng.colors.present,
+  absent: guofeng.colors.absent,
+  empty: guofeng.colors.surfaceElevated,
 };
 
 const STATUS_BORDER: Record<LetterStatus, string> = {
-  correct: '#538d4e',
-  present: '#b59f3b',
-  absent:  '#3a3a3c',
-  empty:   '#3a3a3c',
+  correct: guofeng.colors.correctBorder,
+  present: guofeng.colors.presentBorder,
+  absent: guofeng.colors.absentBorder,
+  empty: guofeng.colors.border,
 };
 
 export const Tile = React.memo(({ char, status, isRevealed, delay }: TileProps) => {
@@ -38,17 +39,16 @@ export const Tile = React.memo(({ char, status, isRevealed, delay }: TileProps) 
         }),
       ]).start();
     }
-  }, [isRevealed]);
+  }, [isRevealed, char, delay, flipAnim]);
 
-  // 输入时弹跳效果
   useEffect(() => {
     if (char && !isRevealed) {
       Animated.sequence([
-        Animated.timing(scaleAnim, { toValue: 1.12, duration: 60, useNativeDriver: true }),
-        Animated.timing(scaleAnim, { toValue: 1, duration: 60, useNativeDriver: true }),
+        Animated.timing(scaleAnim, { toValue: 1.08, duration: 70, useNativeDriver: true }),
+        Animated.timing(scaleAnim, { toValue: 1, duration: 80, useNativeDriver: true }),
       ]).start();
     }
-  }, [char]);
+  }, [char, isRevealed, scaleAnim]);
 
   const rotateY = flipAnim.interpolate({
     inputRange: [0, 0.5, 1],
@@ -57,10 +57,15 @@ export const Tile = React.memo(({ char, status, isRevealed, delay }: TileProps) 
 
   const bgColor = flipAnim.interpolate({
     inputRange: [0, 0.5, 0.501, 1],
-    outputRange: ['#121213', '#121213', STATUS_COLORS[status], STATUS_COLORS[status]],
+    outputRange: [
+      guofeng.colors.surfaceElevated,
+      guofeng.colors.surfaceElevated,
+      STATUS_COLORS[status],
+      STATUS_COLORS[status],
+    ],
   });
 
-  const borderColor = isRevealed ? STATUS_BORDER[status] : char ? '#565758' : '#3a3a3c';
+  const borderColor = isRevealed ? STATUS_BORDER[status] : char ? guofeng.colors.goldMuted : guofeng.colors.border;
 
   return (
     <Animated.View
@@ -73,6 +78,7 @@ export const Tile = React.memo(({ char, status, isRevealed, delay }: TileProps) 
         },
       ]}
     >
+      <View style={styles.innerLine} pointerEvents="none" />
       <Text style={styles.char}>{char}</Text>
     </Animated.View>
   );
@@ -80,17 +86,28 @@ export const Tile = React.memo(({ char, status, isRevealed, delay }: TileProps) 
 
 const styles = StyleSheet.create({
   tile: {
-    width: 62,
-    height: 62,
-    borderWidth: 2,
-    borderRadius: 4,
+    width: 58,
+    height: 58,
+    borderWidth: 1.5,
+    borderRadius: guofeng.radius.md,
     justifyContent: 'center',
     alignItems: 'center',
-    margin: 3,
+    margin: 3.5,
+    overflow: 'hidden',
+  },
+  innerLine: {
+    position: 'absolute',
+    left: 5,
+    right: 5,
+    top: 5,
+    bottom: 5,
+    borderWidth: 1,
+    borderColor: 'rgba(247, 234, 213, 0.08)',
+    borderRadius: guofeng.radius.sm,
   },
   char: {
-    fontSize: 26,
-    fontWeight: '700',
-    color: '#fff',
+    fontSize: 25,
+    fontWeight: '900',
+    color: guofeng.colors.text,
   },
 });

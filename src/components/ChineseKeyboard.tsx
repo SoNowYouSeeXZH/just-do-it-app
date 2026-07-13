@@ -7,6 +7,7 @@ import {
   TextInput,
   Platform,
 } from 'react-native';
+import { guofeng } from '../theme/guofeng';
 
 interface ChineseKeyboardProps {
   value: string;
@@ -26,66 +27,97 @@ export const ChineseKeyboard = React.memo(({
 
   return (
     <View style={styles.container}>
-      <TextInput
-        value={value}
-        onChangeText={handleChangeText}
-        style={styles.input}
-        placeholder="输入四字成语"
-        placeholderTextColor="#818384"
-        autoCorrect={false}
-        autoComplete="off"
-        keyboardType="default"
-        returnKeyType="done"
-        onSubmitEditing={onSubmit}
-        maxLength={8}
-        multiline={false}
-      />
+      <View style={styles.panel}>
+        <Text style={styles.label}>落笔成语</Text>
+        <TextInput
+          value={value}
+          onChangeText={handleChangeText}
+          style={styles.input}
+          placeholder="输入四字成语"
+          placeholderTextColor={guofeng.colors.textDim}
+          autoCorrect={false}
+          autoComplete="off"
+          keyboardType="default"
+          returnKeyType="done"
+          onSubmitEditing={onSubmit}
+          maxLength={8}
+          multiline={false}
+        />
 
-      <TouchableOpacity
-        style={[styles.submitBtn, value.length === 4 ? styles.submitActive : styles.submitInactive]}
-        onPress={onSubmit}
-        disabled={value.length < 4}
-        activeOpacity={0.7}
-      >
-        <Text style={styles.actionText}>提交 ({value.length}/4)</Text>
-      </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.submitBtn, value.length === 4 ? styles.submitActive : styles.submitInactive]}
+          onPress={onSubmit}
+          disabled={value.length < 4}
+          activeOpacity={0.7}
+        >
+          <Text style={[styles.actionText, value.length === 4 ? styles.actionActive : styles.actionInactive]}>
+            提交答案  {value.length}/4
+          </Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 });
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 16,
+    paddingHorizontal: guofeng.spacing.lg,
     paddingBottom: Platform.OS === 'ios' ? 24 : 12,
-    gap: 12,
+  },
+  panel: {
+    borderRadius: guofeng.radius.xl,
+    borderWidth: 1,
+    borderColor: guofeng.colors.borderSoft,
+    backgroundColor: 'rgba(27, 20, 13, 0.94)',
+    padding: guofeng.spacing.md,
+    shadowColor: guofeng.shadow.color,
+    shadowOpacity: guofeng.shadow.opacity,
+    shadowRadius: guofeng.shadow.radius,
+    shadowOffset: guofeng.shadow.offset,
+    elevation: guofeng.shadow.elevation,
+  },
+  label: {
+    color: guofeng.colors.gold,
+    fontSize: 12,
+    fontWeight: '800',
+    letterSpacing: 3,
+    marginBottom: guofeng.spacing.sm,
   },
   input: {
-    height: 52,
-    borderRadius: 10,
-    borderWidth: 2,
-    borderColor: '#3a3a3c',
-    backgroundColor: '#1a1a1b',
-    color: '#fff',
+    height: 54,
+    borderRadius: guofeng.radius.md,
+    borderWidth: 1.5,
+    borderColor: guofeng.colors.border,
+    backgroundColor: guofeng.colors.ink,
+    color: guofeng.colors.text,
     fontSize: 22,
-    fontWeight: '700',
+    fontWeight: '900',
     textAlign: 'center',
-    letterSpacing: 4,
+    letterSpacing: 5,
     paddingHorizontal: 16,
+    marginBottom: guofeng.spacing.md,
   },
   submitBtn: {
-    borderRadius: 10,
+    borderRadius: guofeng.radius.md,
     paddingVertical: 14,
     alignItems: 'center',
   },
   submitActive: {
-    backgroundColor: '#538d4e',
+    backgroundColor: guofeng.colors.gold,
   },
   submitInactive: {
-    backgroundColor: '#3a3a3c',
+    backgroundColor: guofeng.colors.absent,
+    borderWidth: 1,
+    borderColor: guofeng.colors.absentBorder,
   },
   actionText: {
-    color: '#fff',
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: '900',
+  },
+  actionActive: {
+    color: guofeng.colors.ink,
+  },
+  actionInactive: {
+    color: guofeng.colors.textDim,
   },
 });

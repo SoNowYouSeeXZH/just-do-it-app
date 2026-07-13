@@ -36,3 +36,6 @@ yarn-error.*
 
 # worktrees
 .worktrees/
+
+# local visual brainstorming cache
+.superpowers/

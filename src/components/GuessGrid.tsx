@@ -2,6 +2,7 @@ import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Tile } from './Tile';
 import { GuessRow } from '../store/types';
+import { guofeng } from '../theme/guofeng';
 
 interface GuessGridProps {
   guesses: GuessRow[];
@@ -38,8 +39,11 @@ export const GuessGrid = React.memo(({ guesses, currentInput, currentRow }: Gues
 
 const styles = StyleSheet.create({
   grid: {
-    marginVertical: 16,
     alignItems: 'center',
+    paddingVertical: guofeng.spacing.sm,
+    paddingHorizontal: guofeng.spacing.xs,
+    borderRadius: guofeng.radius.xl,
+    backgroundColor: 'rgba(16, 13, 9, 0.18)',
   },
   row: {
     flexDirection: 'row',

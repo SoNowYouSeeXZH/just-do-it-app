@@ -9,12 +9,13 @@ import {
   Platform,
 } from 'react-native';
 import { useGameStore } from '../store/gameStore';
+import { guofeng } from '../theme/guofeng';
 
 const EMOJI_MAP: Record<string, string> = {
   correct: '🟩',
   present: '🟨',
-  absent:  '⬛',
-  empty:   '⬜',
+  absent: '⬛',
+  empty: '⬜',
 };
 
 export default function ResultModal() {
@@ -25,11 +26,11 @@ export default function ResultModal() {
   useEffect(() => {
     if (status !== 'playing') {
       Animated.parallel([
-        Animated.spring(slideAnim, { toValue: 0, useNativeDriver: true, bounciness: 10 }),
+        Animated.spring(slideAnim, { toValue: 0, useNativeDriver: true, bounciness: 8 }),
         Animated.timing(opacityAnim, { toValue: 1, duration: 300, useNativeDriver: true }),
       ]).start();
     }
-  }, [status]);
+  }, [status, slideAnim, opacityAnim]);
 
   if (status === 'playing') return null;
 
@@ -58,18 +59,15 @@ export default function ResultModal() {
       pointerEvents="box-none"
     >
       <Animated.View style={[styles.card, { transform: [{ translateY: slideAnim }] }]}>
-        {/* 标题 */}
-        <Text style={styles.title}>
-          {status === 'won' ? '猜对了！' : '很遗憾'}
-        </Text>
+        <View style={styles.handle} />
+        <Text style={styles.eyebrow}>今日成绩笺</Text>
+        <Text style={styles.title}>{status === 'won' ? '一语中的' : '差一点入局'}</Text>
 
-        {/* 答案 */}
-        <View style={styles.answerRow}>
-          <Text style={styles.answerLabel}>今日成语</Text>
+        <View style={styles.answerPanel}>
+          <Text style={styles.answerLabel}>谜底成语</Text>
           <Text style={styles.answerText}>{answer}</Text>
         </View>
 
-        {/* 统计数据 */}
         <View style={styles.statsRow}>
           <View style={styles.statBox}>
             <Text style={styles.statBig}>{totalPlayed}</Text>
@@ -85,8 +83,7 @@ export default function ResultModal() {
           </View>
         </View>
 
-        {/* 本局路径 */}
-        <View style={styles.emojiGrid}>
+        <View style={styles.emojiPanel}>
           {guesses.slice(0, currentRow).map((row, i) => (
             <Text key={i} style={styles.emojiRow}>
               {row.statuses.map((s) => EMOJI_MAP[s]).join('')}
@@ -94,10 +91,9 @@ export default function ResultModal() {
           ))}
         </View>
 
-        {/* 操作按钮 */}
         <View style={styles.btnRow}>
           <TouchableOpacity style={styles.shareBtn} onPress={handleShare}>
-            <Text style={styles.shareBtnText}>分享结果</Text>
+            <Text style={styles.shareBtnText}>分享战绩</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.nextBtn} onPress={resetForNewDay}>
             <Text style={styles.nextBtnText}>再来一局</Text>
@@ -112,69 +108,91 @@ const styles = StyleSheet.create({
   overlay: {
     ...StyleSheet.absoluteFillObject,
     justifyContent: 'flex-end',
-    backgroundColor: 'rgba(0,0,0,0.6)',
+    backgroundColor: 'rgba(5, 4, 3, 0.72)',
     zIndex: 100,
   },
   card: {
-    backgroundColor: '#1a1a1b',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    padding: 24,
+    backgroundColor: guofeng.colors.surface,
+    borderTopLeftRadius: guofeng.radius.xl,
+    borderTopRightRadius: guofeng.radius.xl,
+    padding: guofeng.spacing.xl,
     paddingBottom: Platform.OS === 'ios' ? 36 : 24,
     borderTopWidth: 1,
-    borderColor: '#3a3a3c',
+    borderColor: guofeng.colors.border,
   },
-  title: {
-    color: '#fff',
-    fontSize: 24,
-    fontWeight: '800',
-    textAlign: 'center',
-    marginBottom: 16,
+  handle: {
+    alignSelf: 'center',
+    width: 42,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: guofeng.colors.border,
+    marginBottom: 18,
   },
-  answerRow: {
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  answerLabel: {
-    color: '#818384',
-    fontSize: 13,
-    marginBottom: 4,
-  },
-  answerText: {
-    color: '#fff',
-    fontSize: 28,
+  eyebrow: {
+    color: guofeng.colors.gold,
+    fontSize: 12,
     fontWeight: '800',
     letterSpacing: 4,
+    textAlign: 'center',
+    marginBottom: 6,
+  },
+  title: {
+    color: guofeng.colors.text,
+    fontSize: 25,
+    fontWeight: '900',
+    textAlign: 'center',
+    marginBottom: 18,
+    letterSpacing: 2,
+  },
+  answerPanel: {
+    alignItems: 'center',
+    borderRadius: guofeng.radius.lg,
+    borderWidth: 1,
+    borderColor: guofeng.colors.borderSoft,
+    backgroundColor: guofeng.colors.ink,
+    paddingVertical: 16,
+    marginBottom: 16,
+  },
+  answerLabel: {
+    color: guofeng.colors.textMuted,
+    fontSize: 12,
+    marginBottom: 5,
+  },
+  answerText: {
+    color: guofeng.colors.goldBright,
+    fontSize: 30,
+    fontWeight: '900',
+    letterSpacing: 5,
   },
   statsRow: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    marginBottom: 20,
-    paddingVertical: 16,
+    marginBottom: 16,
+    paddingVertical: 14,
     borderTopWidth: 1,
     borderBottomWidth: 1,
-    borderColor: '#3a3a3c',
+    borderColor: guofeng.colors.borderSoft,
   },
   statBox: {
     alignItems: 'center',
   },
   statBig: {
-    color: '#fff',
-    fontSize: 30,
-    fontWeight: '800',
+    color: guofeng.colors.text,
+    fontSize: 28,
+    fontWeight: '900',
   },
   statSub: {
-    color: '#818384',
-    fontSize: 13,
+    color: guofeng.colors.textMuted,
+    fontSize: 12,
     marginTop: 2,
   },
-  emojiGrid: {
+  emojiPanel: {
     alignItems: 'center',
-    marginBottom: 20,
-    gap: 4,
+    marginBottom: 18,
+    gap: 3,
   },
   emojiRow: {
-    fontSize: 22,
+    fontSize: 21,
     letterSpacing: 2,
   },
   btnRow: {
@@ -183,26 +201,28 @@ const styles = StyleSheet.create({
   },
   shareBtn: {
     flex: 1,
-    backgroundColor: '#818384',
-    borderRadius: 10,
+    backgroundColor: guofeng.colors.surfaceSoft,
+    borderRadius: guofeng.radius.md,
+    borderWidth: 1,
+    borderColor: guofeng.colors.border,
     paddingVertical: 14,
     alignItems: 'center',
   },
   shareBtnText: {
-    color: '#fff',
+    color: guofeng.colors.text,
     fontSize: 15,
-    fontWeight: '700',
+    fontWeight: '900',
   },
   nextBtn: {
     flex: 1,
-    backgroundColor: '#538d4e',
-    borderRadius: 10,
+    backgroundColor: guofeng.colors.gold,
+    borderRadius: guofeng.radius.md,
     paddingVertical: 14,
     alignItems: 'center',
   },
   nextBtnText: {
-    color: '#fff',
+    color: guofeng.colors.ink,
     fontSize: 15,
-    fontWeight: '700',
+    fontWeight: '900',
   },
 });
