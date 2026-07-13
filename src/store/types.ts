@@ -23,8 +23,7 @@ export interface GameState {
 }
 
 export interface GameActions {
-  inputChar: (char: string) => void;
-  deleteChar: () => void;
+  setCurrentInput: (value: string) => void;
   submitGuess: () => 'ok' | 'invalid_format' | 'not_in_list' | 'already_won' | 'no_more_rows';
   resetForNewDay: () => void;
 }

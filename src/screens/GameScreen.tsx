@@ -23,8 +23,7 @@ export default function GameScreen() {
     streak,
     totalPlayed,
     totalWon,
-    inputChar,
-    deleteChar,
+    setCurrentInput,
     submitGuess,
   } = useGameStore();
 
@@ -137,10 +136,9 @@ export default function GameScreen() {
       {/* 输入区 */}
       {status === 'playing' ? (
         <ChineseKeyboard
-          onInput={inputChar}
-          onDelete={deleteChar}
+          value={currentInput}
+          onChange={setCurrentInput}
           onSubmit={handleSubmit}
-          currentLength={currentInput.length}
         />
       ) : null}
 

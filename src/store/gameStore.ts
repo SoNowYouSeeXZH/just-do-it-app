@@ -65,17 +65,10 @@ export const useGameStore = create<StoreState>()(
       totalWon: 0,
       lastPlayedDate: '',
 
-      inputChar: (char: string) => {
-        const { currentInput, status } = get();
+      setCurrentInput: (value: string) => {
+        const { status } = get();
         if (status !== 'playing') return;
-        if (currentInput.length < IDIOM_LENGTH) {
-          set({ currentInput: currentInput + char });
-        }
-      },
-
-      deleteChar: () => {
-        const { currentInput } = get();
-        set({ currentInput: currentInput.slice(0, -1) });
+        set({ currentInput: value.slice(0, IDIOM_LENGTH) });
       },
 
       submitGuess: () => {

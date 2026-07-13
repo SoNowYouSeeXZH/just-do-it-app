@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useCallback } from 'react';
 import {
   View,
   Text,
@@ -9,88 +9,46 @@ import {
 } from 'react-native';
 
 interface ChineseKeyboardProps {
-  onInput: (char: string) => void;
-  onDelete: () => void;
+  value: string;
+  onChange: (value: string) => void;
   onSubmit: () => void;
-  currentLength: number;
 }
 
-/**
- * 中文输入键盘
- * 通过隐藏 TextInput 调起系统中文输入法，同时提供视觉键盘界面
- */
 export const ChineseKeyboard = React.memo(({
-  onInput,
-  onDelete,
+  value,
+  onChange,
   onSubmit,
-  currentLength,
 }: ChineseKeyboardProps) => {
-  const inputRef = useRef<TextInput>(null);
-  const pendingRef = useRef('');
-
-  const handleChangeText = (text: string) => {
-    const prev = pendingRef.current;
-    if (text.length > prev.length) {
-      // 新增字符
-      const added = text.slice(prev.length);
-      const chinese = added.match(/[\u4e00-\u9fa5]/g);
-      if (chinese) {
-        chinese.forEach((ch) => onInput(ch));
-      }
-    } else {
-      // 删除字符
-      onDelete();
-    }
-    pendingRef.current = text;
-    // 保持输入框清空，避免积累
-    if (inputRef.current) {
-      inputRef.current.setNativeProps({ text: '' });
-      pendingRef.current = '';
-    }
-  };
+  const handleChangeText = useCallback((text: string) => {
+    const normalized = (text.match(/[\u4e00-\u9fa5]/g) || []).join('').slice(0, 4);
+    onChange(normalized);
+  }, [onChange]);
 
   return (
     <View style={styles.container}>
-      {/* 隐藏的原生输入框，用于触发系统输入法 */}
       <TextInput
-        ref={inputRef}
-        style={styles.hiddenInput}
+        value={value}
         onChangeText={handleChangeText}
+        style={styles.input}
+        placeholder="输入四字成语"
+        placeholderTextColor="#818384"
         autoCorrect={false}
         autoComplete="off"
         keyboardType="default"
         returnKeyType="done"
         onSubmitEditing={onSubmit}
+        maxLength={8}
         multiline={false}
-        blurOnSubmit={false}
       />
 
-      <View style={styles.buttonRow}>
-        <TouchableOpacity
-          style={styles.inputBtn}
-          onPress={() => inputRef.current?.focus()}
-          activeOpacity={0.7}
-        >
-          <Text style={styles.inputBtnText}>
-            {currentLength < 4 ? `点击输入汉字 (${currentLength}/4)` : '4字已输入'}
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.actionRow}>
-        <TouchableOpacity style={styles.deleteBtn} onPress={onDelete} activeOpacity={0.7}>
-          <Text style={styles.actionText}>⌫ 删除</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.submitBtn, currentLength === 4 ? styles.submitActive : styles.submitInactive]}
-          onPress={onSubmit}
-          disabled={currentLength < 4}
-          activeOpacity={0.7}
-        >
-          <Text style={styles.actionText}>提交</Text>
-        </TouchableOpacity>
-      </View>
+      <TouchableOpacity
+        style={[styles.submitBtn, value.length === 4 ? styles.submitActive : styles.submitInactive]}
+        onPress={onSubmit}
+        disabled={value.length < 4}
+        activeOpacity={0.7}
+      >
+        <Text style={styles.actionText}>提交 ({value.length}/4)</Text>
+      </TouchableOpacity>
     </View>
   );
 });
@@ -99,40 +57,22 @@ const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 16,
     paddingBottom: Platform.OS === 'ios' ? 24 : 12,
+    gap: 12,
   },
-  hiddenInput: {
-    position: 'absolute',
-    width: 1,
-    height: 1,
-    opacity: 0,
-  },
-  buttonRow: {
-    marginBottom: 12,
-  },
-  inputBtn: {
-    backgroundColor: '#818384',
+  input: {
+    height: 52,
     borderRadius: 10,
-    paddingVertical: 14,
-    alignItems: 'center',
-  },
-  inputBtnText: {
+    borderWidth: 2,
+    borderColor: '#3a3a3c',
+    backgroundColor: '#1a1a1b',
     color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  actionRow: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  deleteBtn: {
-    flex: 1,
-    backgroundColor: '#818384',
-    borderRadius: 10,
-    paddingVertical: 14,
-    alignItems: 'center',
+    fontSize: 22,
+    fontWeight: '700',
+    textAlign: 'center',
+    letterSpacing: 4,
+    paddingHorizontal: 16,
   },
   submitBtn: {
-    flex: 1,
     borderRadius: 10,
     paddingVertical: 14,
     alignItems: 'center',
