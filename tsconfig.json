@@ -10,8 +10,8 @@
         "isolatedModules": true,
         "jsx": "react-native",
         "lib": ["ESNext"],
-        "types": ["react-native", "jest", "node"],
-        "moduleResolution": "node",
+        "types": ["react-native"],
+        "moduleResolution": "bundler",
         "noEmit": true,
         "strict": true,
         "target": "esnext"
