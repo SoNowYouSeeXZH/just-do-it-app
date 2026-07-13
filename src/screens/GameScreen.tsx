@@ -4,8 +4,6 @@ import {
   Text,
   StyleSheet,
   Animated,
-  Alert,
-  TouchableOpacity,
   ScrollView,
   Platform,
 } from 'react-native';
@@ -13,6 +11,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useGameStore } from '../store/gameStore';
 import { GuessGrid } from '../components/GuessGrid';
 import { ChineseKeyboard } from '../components/ChineseKeyboard';
+import ResultModal from '../components/ResultModal';
 
 export default function GameScreen() {
   const {
@@ -27,7 +26,6 @@ export default function GameScreen() {
     inputChar,
     deleteChar,
     submitGuess,
-    resetForNewDay,
   } = useGameStore();
 
   const shakeAnim = useRef(new Animated.Value(0)).current;
@@ -144,16 +142,10 @@ export default function GameScreen() {
           onSubmit={handleSubmit}
           currentLength={currentInput.length}
         />
-      ) : (
-        <View style={styles.endZone}>
-          <Text style={styles.endText}>
-            {status === 'won' ? '猜对了！' : `答案：${answer}`}
-          </Text>
-          <TouchableOpacity style={styles.resetBtn} onPress={resetForNewDay}>
-            <Text style={styles.resetText}>再来一局</Text>
-          </TouchableOpacity>
-        </View>
-      )}
+      ) : null}
+
+      {/* 结果弹层 */}
+      <ResultModal />
     </SafeAreaView>
   );
 }
@@ -238,18 +230,6 @@ const styles = StyleSheet.create({
     color: '#818384',
     fontSize: 12,
     marginRight: 6,
-  },
-  endZone: {
-    padding: 20,
-    alignItems: 'center',
-    borderTopWidth: 1,
-    borderTopColor: '#3a3a3c',
-  },
-  endText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: '700',
-    marginBottom: 12,
   },
   resetBtn: {
     backgroundColor: '#538d4e',
