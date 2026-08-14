@@ -16,6 +16,7 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Home, BookOpen, Compass, Gamepad2 } from "lucide-react-native";
 
 import { tokens } from "@/theme/tokens";
+import { guofeng } from "@/theme/guofeng";
 import type { RootStackParamList, TabParamList } from "@/navigation/types";
 
 import HomeScreen from "@/screens/HomeScreen";
@@ -35,15 +36,19 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 function TabsNavigator() {
   return (
     <Tab.Navigator
-      screenOptions={{
-        headerShown: false, // 主页面各自管理自己的头部
-        tabBarActiveTintColor: tokens.colors.primary, // 选中态用主色
-        tabBarInactiveTintColor: tokens.colors.textDim,
-        tabBarStyle: {
-          backgroundColor: tokens.colors.surface,
-          borderTopColor: tokens.colors.border,
-        },
-        tabBarLabelStyle: { fontSize: tokens.fontSize.xs, fontWeight: "600" },
+      screenOptions={({ route }) => {
+        const isGameTab = route.name === "Game";
+
+        return {
+          headerShown: false, // 主页面各自管理自己的头部
+          tabBarActiveTintColor: isGameTab ? guofeng.colors.goldBright : tokens.colors.primary,
+          tabBarInactiveTintColor: isGameTab ? guofeng.colors.textDim : tokens.colors.textDim,
+          tabBarStyle: {
+            backgroundColor: isGameTab ? guofeng.colors.backgroundDeep : tokens.colors.surface,
+            borderTopColor: isGameTab ? guofeng.colors.borderSoft : tokens.colors.border,
+          },
+          tabBarLabelStyle: { fontSize: tokens.fontSize.xs, fontWeight: "600" },
+        };
       }}
     >
       <Tab.Screen

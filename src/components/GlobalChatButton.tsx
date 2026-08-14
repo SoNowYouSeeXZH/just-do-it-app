@@ -6,8 +6,19 @@
 // 由 LearningPathScreen 页面内入口全局化而来：原页面内的按钮 + ChatPanel
 // 整体搬到 App 层，页面不再各自维护入口。对话状态在组件内，每次打开都是新对话。
 
-import React, { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import React, { useMemo, useRef, useState } from 'react';
+import {
+  StyleSheet,
+  Text,
+  useWindowDimensions,
+  View,
+} from 'react-native';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import Animated, {
+  runOnJS,
+  useAnimatedStyle,
+  useSharedValue,
+} from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MessageCircle } from 'lucide-react-native';
 
@@ -18,20 +29,100 @@ export function GlobalChatButton() {
   // 页面内按钮原来用「当前路径的主题色」，全局化后没有路径概念，
   // 统一用全局主题色 primary。
   const insets = useSafeAreaInsets();
+  const { height: windowHeight, width: windowWidth } = useWindowDimensions();
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [buttonSize, setButtonSize] = useState({ width: 132, height: 52 });
+  const [isLayoutReady, setIsLayoutReady] = useState(false);
+  const hasInitializedPosition = useRef(false);
+  const positionX = useSharedValue(0);
+  const positionY = useSharedValue(0);
+  const startX = useSharedValue(0);
+  const startY = useSharedValue(0);
+
+  const openChat = () => setIsChatOpen(true);
+  const clamp = (value: number, min: number, max: number) => {
+    'worklet';
+    return Math.min(Math.max(value, min), max);
+  };
+
+  const gesture = useMemo(() => {
+    const panGesture = Gesture.Pan()
+      .minDistance(4)
+      .onStart(() => {
+        startX.value = positionX.value;
+        startY.value = positionY.value;
+      })
+      .onUpdate((event) => {
+        positionX.value = clamp(
+          startX.value + event.translationX,
+          0,
+          Math.max(0, windowWidth - buttonSize.width),
+        );
+        positionY.value = clamp(
+          startY.value + event.translationY,
+          0,
+          Math.max(0, windowHeight - insets.bottom - buttonSize.height),
+        );
+      });
+
+    const tapGesture = Gesture.Tap()
+      .maxDuration(300)
+      .onEnd((_event, success) => {
+        if (success) runOnJS(openChat)();
+      });
+
+    return Gesture.Exclusive(panGesture, tapGesture);
+  }, [
+    buttonSize.height,
+    buttonSize.width,
+    insets.bottom,
+    openChat,
+    positionX,
+    positionY,
+    startX,
+    startY,
+    windowHeight,
+    windowWidth,
+  ]);
+
+  const animatedPosition = useAnimatedStyle(() => ({
+    left: positionX.value,
+    top: positionY.value,
+    opacity: isLayoutReady ? 1 : 0,
+  }));
 
   return (
     <>
-      <Pressable
+      <GestureDetector gesture={gesture}>
+        <Animated.View
+        accessible
+        accessibilityRole="button"
         accessibilityLabel="打开 AI 学习助手"
-        onPress={() => setIsChatOpen(true)}
-        style={[styles.chatButton, { bottom: tokens.spacing.lg + insets.bottom }]}
-      >
-        <View style={styles.chatIcon}>
-          <MessageCircle color={tokens.colors.onPrimary} size={18} />
-        </View>
-        <Text style={styles.chatButtonText}>问问 AI</Text>
-      </Pressable>
+        onAccessibilityTap={() => setIsChatOpen(true)}
+        onLayout={(event) => {
+          const { height, width } = event.nativeEvent.layout;
+          setButtonSize({ height, width });
+          if (!hasInitializedPosition.current) {
+            const initialPosition = {
+              x: Math.max(0, windowWidth - tokens.spacing.lg - width),
+              y: Math.max(0, windowHeight - insets.bottom - tokens.spacing.lg - height),
+            };
+            positionX.value = initialPosition.x;
+            positionY.value = initialPosition.y;
+            hasInitializedPosition.current = true;
+            setIsLayoutReady(true);
+          }
+        }}
+          style={[styles.chatButton, animatedPosition]}
+        >
+          <View style={styles.chatContent}>
+            <View style={styles.chatIcon}>
+              <MessageCircle color={tokens.colors.onPrimary} size={18} />
+            </View>
+            <Text style={styles.chatButtonText}>问问 AI</Text>
+          </View>
+        </Animated.View>
+      </GestureDetector>
 
       {isChatOpen ? <ChatPanel onClose={() => setIsChatOpen(false)} /> : null}
     </>
@@ -41,7 +132,8 @@ export function GlobalChatButton() {
 const styles = StyleSheet.create({
   chatButton: {
     position: 'absolute',
-    right: tokens.spacing.lg,
+  },
+  chatContent: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: tokens.spacing.sm,
