@@ -6,6 +6,8 @@ import {
   Animated,
   ScrollView,
   Platform,
+  Modal,
+  TouchableOpacity,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useGameStore } from '../store/gameStore';
@@ -31,6 +33,7 @@ export default function GameScreen() {
   const shakeAnim = useRef(new Animated.Value(0)).current;
   const [toast, setToast] = useState<string | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [ruleModalVisible, setRuleModalVisible] = useState(false);
 
   const showToast = useCallback((msg: string) => {
     setToast(msg);
@@ -94,8 +97,17 @@ export default function GameScreen() {
           <Text style={styles.eyebrow}>每日成语局</Text>
           <Text style={styles.headerTitle}>成语猜猜</Text>
         </View>
-        <View style={styles.badge}>
-          <Text style={styles.badgeText}>第 {currentRow + 1}/6 试</Text>
+        <View style={styles.headerRight}>
+          <TouchableOpacity
+            style={styles.ruleBtn}
+            onPress={() => setRuleModalVisible(true)}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.ruleBtnText}>?</Text>
+          </TouchableOpacity>
+          <View style={styles.badge}>
+            <Text style={styles.badgeText}>第 {currentRow + 1}/6 试</Text>
+          </View>
         </View>
       </View>
 
@@ -153,6 +165,58 @@ export default function GameScreen() {
       ) : null}
 
       <ResultModal />
+
+      <Modal
+        visible={ruleModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setRuleModalVisible(false)}
+      >
+        <View style={styles.ruleModalOverlay}>
+          <View style={styles.ruleModalCard}>
+            <Text style={styles.ruleModalTitle}>玩法规则</Text>
+
+            <Text style={styles.ruleModalPara}>
+              每天挑战一个四字成语，共 6 次机会。每次提交后，方块颜色会提示当前输入与谜底的差异。
+            </Text>
+
+            <View style={styles.ruleModalLegendRow}>
+              <View style={[styles.legendPill, { backgroundColor: guofeng.colors.correct }]}>
+                <Text style={styles.legendText}>正位</Text>
+              </View>
+              <Text style={styles.ruleModalLegendDesc}>字对、位置也对</Text>
+            </View>
+            <View style={styles.ruleModalLegendRow}>
+              <View style={[styles.legendPill, { backgroundColor: guofeng.colors.present }]}>
+                <Text style={styles.legendText}>含字</Text>
+              </View>
+              <Text style={styles.ruleModalLegendDesc}>字在成语中，但位置不对</Text>
+            </View>
+            <View style={styles.ruleModalLegendRow}>
+              <View style={[styles.legendPill, { backgroundColor: guofeng.colors.absent }]}>
+                <Text style={styles.legendText}>无字</Text>
+              </View>
+              <Text style={styles.ruleModalLegendDesc}>谜底中没有这个字</Text>
+            </View>
+
+            <Text style={styles.ruleModalPara}>
+              每个字独立判定，谜底中的字用完一次即用尽——比如谜底只有一个「一」，
+              你猜的成语里出现两个「一」，第二个「一」不会再判为含字或正位。
+            </Text>
+            <Text style={styles.ruleModalPara}>
+              提交的必须是词库中收录的四字成语，否则会提示「词库未收录」。6 次机会内猜中即为胜利。
+            </Text>
+
+            <TouchableOpacity
+              style={styles.ruleModalCloseBtn}
+              onPress={() => setRuleModalVisible(false)}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.ruleModalCloseBtnText}>我知道了</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -195,6 +259,26 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     color: guofeng.colors.text,
     letterSpacing: 4,
+  },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  ruleBtn: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    borderWidth: 1,
+    borderColor: guofeng.colors.border,
+    backgroundColor: 'rgba(36, 26, 16, 0.82)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  ruleBtnText: {
+    color: guofeng.colors.gold,
+    fontSize: 15,
+    fontWeight: '900',
   },
   badge: {
     borderWidth: 1,
@@ -306,5 +390,58 @@ const styles = StyleSheet.create({
   boardWrap: {
     width: '100%',
     alignItems: 'center',
+  },
+  ruleModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(5, 4, 3, 0.72)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: guofeng.spacing.lg,
+  },
+  ruleModalCard: {
+    width: '100%',
+    maxWidth: 380,
+    borderRadius: guofeng.radius.xl,
+    borderWidth: 1,
+    borderColor: guofeng.colors.border,
+    backgroundColor: guofeng.colors.surface,
+    padding: guofeng.spacing.xl,
+  },
+  ruleModalTitle: {
+    color: guofeng.colors.text,
+    fontSize: 20,
+    fontWeight: '900',
+    marginBottom: 14,
+    textAlign: 'center',
+    letterSpacing: 2,
+  },
+  ruleModalPara: {
+    color: guofeng.colors.textMuted,
+    fontSize: 13,
+    lineHeight: 20,
+    marginBottom: 12,
+  },
+  ruleModalLegendRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 10,
+  },
+  ruleModalLegendDesc: {
+    flex: 1,
+    color: guofeng.colors.textMuted,
+    fontSize: 13,
+  },
+  ruleModalCloseBtn: {
+    marginTop: 8,
+    borderRadius: guofeng.radius.md,
+    backgroundColor: guofeng.colors.gold,
+    paddingVertical: 14,
+    alignItems: 'center',
+  },
+  ruleModalCloseBtnText: {
+    color: guofeng.colors.ink,
+    fontSize: 15,
+    fontWeight: '900',
   },
 });

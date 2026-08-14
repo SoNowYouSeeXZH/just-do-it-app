@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -15,13 +15,30 @@ interface ChineseKeyboardProps {
   onSubmit: () => void;
 }
 
+// 非受控输入：不给 TextInput 传 value/onChangeText 驱动的受控回填。
+// 原因：中文输入法在拼字过程中有中间态（拼音候选串），如果每个 keystroke 都用
+// 正则过滤后的 value 强制回写 TextInput，会和输入法的内部合成状态打架，
+// 表现为“第二次输入直接卡死、输入法闪烁但输入框没反应”。
+// 改用 ref 命令式读取/清空，输入法自己管理组字过程，我们只在提交/清空时同步。
 export const ChineseKeyboard = React.memo(({
   value,
   onChange,
   onSubmit,
 }: ChineseKeyboardProps) => {
+  const inputRef = useRef<TextInput>(null);
+  const [length, setLength] = useState(value.length);
+
+  // value 被外部清空（提交成功/切换新的一天）时，同步清空原生输入框。
+  useEffect(() => {
+    if (value === '') {
+      inputRef.current?.clear();
+      setLength(0);
+    }
+  }, [value]);
+
   const handleChangeText = useCallback((text: string) => {
     const normalized = (text.match(/[\u4e00-\u9fa5]/g) || []).join('').slice(0, 4);
+    setLength(normalized.length);
     onChange(normalized);
   }, [onChange]);
 
@@ -30,7 +47,8 @@ export const ChineseKeyboard = React.memo(({
       <View style={styles.panel}>
         <Text style={styles.label}>落笔成语</Text>
         <TextInput
-          value={value}
+          ref={inputRef}
+          defaultValue={value}
           onChangeText={handleChangeText}
           style={styles.input}
           placeholder="输入四字成语"
@@ -45,13 +63,13 @@ export const ChineseKeyboard = React.memo(({
         />
 
         <TouchableOpacity
-          style={[styles.submitBtn, value.length === 4 ? styles.submitActive : styles.submitInactive]}
+          style={[styles.submitBtn, length === 4 ? styles.submitActive : styles.submitInactive]}
           onPress={onSubmit}
-          disabled={value.length < 4}
+          disabled={length < 4}
           activeOpacity={0.7}
         >
-          <Text style={[styles.actionText, value.length === 4 ? styles.actionActive : styles.actionInactive]}>
-            提交答案  {value.length}/4
+          <Text style={[styles.actionText, length === 4 ? styles.actionActive : styles.actionInactive]}>
+            提交答案  {length}/4
           </Text>
         </TouchableOpacity>
       </View>

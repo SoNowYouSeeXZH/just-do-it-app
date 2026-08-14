@@ -1,10 +1,10 @@
 {
   "expo": {
-    "name": "react_native",
+    "name": "转行学习",
     "slug": "react_native",
     "version": "1.0.0",
     "orientation": "portrait",
-    "userInterfaceStyle": "dark",
+    "userInterfaceStyle": "light",
     "assetBundlePatterns": [
       "**/*"
     ],
@@ -24,7 +24,8 @@
       }
     },
     "android": {
-      "package": "com.xumufeng.react_native"
+      "package": "com.careerlearn.app",
+      "usesCleartextTraffic": true
     }
   }
 }
