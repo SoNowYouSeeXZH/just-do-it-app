@@ -8,7 +8,6 @@
     "assetBundlePatterns": [
       "**/*"
     ],
-    "androidGestureService": true,
     "experiments": {
       "tsconfigPaths": true
     },
@@ -18,14 +17,24 @@
     "web": {
       "bundler": "metro"
     },
+    "android": {
+      "package": "com.careerlearn.app"
+    },
+    "plugins": [
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "usesCleartextTraffic": true
+          }
+        }
+      ]
+    ],
     "extra": {
       "eas": {
-        "projectId": "18582248-c96f-402a-9f0a-37ac26a49f48"
+        "projectId": "446acf50-d393-4e05-8913-0f41fc958e47"
       }
     },
-    "android": {
-      "package": "com.careerlearn.app",
-      "usesCleartextTraffic": true
-    }
+    "owner": "xmf"
   }
 }
