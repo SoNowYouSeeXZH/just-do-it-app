@@ -1,8 +1,9 @@
 {
   "expo": {
-    "name": "转行学习",
+    "name": "职途",
     "slug": "react_native",
     "version": "1.0.0",
+    "icon": "./images/zhitu-app-icon-v2.png",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "assetBundlePatterns": [
