@@ -3,22 +3,33 @@
     "appVersionSource": "remote"
   },
   "build": {
+    "base": {
+      "env": {
+        "EXPO_PUBLIC_API_URL": "http://139.155.96.143:8000"
+      }
+    },
     "preview": {
+      "extends": "base",
       "android": {
         "buildType": "apk"
       }
     },
     "preview2": {
+      "extends": "base",
       "android": {
         "gradleCommand": ":app:assembleRelease"
       }
     },
     "preview3": {
+      "extends": "base",
       "developmentClient": true
     },
     "preview4": {
+      "extends": "base",
       "distribution": "internal"
     },
-    "production": {}
+    "production": {
+      "extends": "base"
+    }
   }
 }
