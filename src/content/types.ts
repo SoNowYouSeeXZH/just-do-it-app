@@ -26,7 +26,7 @@ export interface LearningStep {
   id: string;
   title: string; // 步骤标题
   desc: string; // 步骤说明
-  quizJobId?: string; // 若可用答题巩固，指向 data/jobs.ts 里的职业 id（打通 Phase 1）
+  quizJobId?: string; // 若可用答题巩固，指向后端 /api/jobs 返回的职业 id
   links?: ResourceLink[]; // 该步骤的参考资料
 }
 
